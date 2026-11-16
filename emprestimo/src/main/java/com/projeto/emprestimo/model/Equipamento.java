@@ -73,8 +73,8 @@ public class Equipamento {
 
     public void emprestar() {
         if (!disponivel) {
-            throw new IllegalStateException("Equipamento indisponível");
-        }
+           throw new IllegalStateException("Equipamento indisponível");
+       }
         disponivel = false;
     }
     /*
