@@ -2,9 +2,11 @@ package com.projeto.emprestimo.service;
 
 import com.projeto.emprestimo.model.Equipamento;
 import com.projeto.emprestimo.model.TipoEquipamento;
+import com.projeto.emprestimo.repository.EmprestimoRepository;
 import com.projeto.emprestimo.repository.EquipamentoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -12,30 +14,17 @@ import java.util.List;
 @Service
 public class EquipamentoService {
 
-    // Guarda uma referência ao Repository,
-    // que é responsável por acessar o banco de dados.
-    private final EquipamentoRepository repository;
-
-    // Construtor: recebe o Repository e guarda na variável.
-    // Isso é chamado de injeção de dependência.
-    public EquipamentoService(EquipamentoRepository repository) {
-        this.repository = repository;
-    }
-
-    // Metodo responsável por listar os equipamentos.
-    // Recebe um tipo de equipamento como parâmetro.
-    public List<Equipamento> listar(TipoEquipamento tipo) {
-
-        // Verifica se o tipo recebido é nulo (não foi informado).
-        if (tipo == null) {
-
-            // Se não informou o tipo, busca todos os equipamentos.
-            return repository.findAll();
+        public List<Equipamento> listar(TipoEquipamento tipo, Boolean disponivel) {
+        if (tipo != null && disponivel != null) {
+            return repository.findByTipoAndDisponivel(tipo, disponivel);
         }
-
-        // Se informou um tipo, busca apenas os equipamentos
-        // que pertencem àquele tipo.
-        return repository.findByTipo(tipo);
+        if (tipo != null) {
+            return repository.findByTipo(tipo);
+        }
+        if (disponivel != null) {
+            return repository.findByDisponivel(disponivel);
+        }
+        return repository.findAll();
     }
 
     // Metodo responsável por buscar um equipamento pelo ID.
@@ -55,7 +44,6 @@ public class EquipamentoService {
     }
 
     public Equipamento cadastrar(Equipamento equipamento) {
-        EquipamentoRepository repository = null;
         if (repository.existsByPatrimonio(equipamento.getPatrimonio())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Patrimônio já cadastrado");
@@ -64,5 +52,28 @@ public class EquipamentoService {
         return repository.save(equipamento);
     }
 
-    
+    public Equipamento atualizar(Long id, Equipamento dados) {
+        Equipamento equipamento = buscar(id);
+        equipamento.setNome(dados.getNome());
+        equipamento.setTipo(dados.getTipo());
+        return repository.save(equipamento);
+    }
+
+      public void remover(Long id) {
+        Equipamento equipamento = buscar(id);
+        if (emprestimoRepository.existsByEquipamentoId(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Equipamento tem histórico de empréstimos");
+        }
+        repository.delete(equipamento);
+    }
+
+    private final EquipamentoRepository repository;
+    private final EmprestimoRepository emprestimoRepository;
+
+    public EquipamentoService(EquipamentoRepository repository,
+                              EmprestimoRepository emprestimoRepository) {
+        this.repository = repository;
+        this.emprestimoRepository = emprestimoRepository;
+    }
 }

@@ -1,11 +1,9 @@
 package com.projeto.emprestimo.model;
 
-import com.projeto.emprestimo.repository.EquipamentoRepository;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+
 
 @Entity
 public class Equipamento {
@@ -73,6 +71,20 @@ public class Equipamento {
         this.disponivel = disponivel;
     }
 
+    public void emprestar() {
+        if (!disponivel) {
+            throw new IllegalStateException("Equipamento indisponível");
+        }
+        disponivel = false;
+    }
+    /*
+    O emprestar() lê assim: “se não estiver disponível, lança o erro e para aí;
+    se passou do if, marca como indisponível”.
+    O ! na frente de disponivel significa “não”.
+     */
 
+    public void devolver() {
+        disponivel = true;
+    }
 
 }
