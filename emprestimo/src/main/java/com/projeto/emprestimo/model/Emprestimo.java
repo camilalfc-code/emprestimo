@@ -12,7 +12,6 @@ public class Emprestimo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long equipamentoId;
     private Long colaboradorId;
     private LocalDate dataEmprestimo;

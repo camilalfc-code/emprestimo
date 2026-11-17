@@ -37,4 +37,9 @@ public class ColaboradorController {
     public List<Emprestimo> listarEmprestimos(@PathVariable Long id) {
         return emprestimoService.listarDoColaborador(id);
     }
+
+    @GetMapping("/{id}")
+    public Colaborador buscar(@PathVariable Long id) {
+        return service.buscar(id);
+    }
 }
