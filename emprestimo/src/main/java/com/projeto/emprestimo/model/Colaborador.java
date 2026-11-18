@@ -1,6 +1,7 @@
 package com.projeto.emprestimo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
@@ -15,6 +16,7 @@ public class Colaborador {
     private String nome;
 
     @NotBlank(message = "O e-mail é obrigatório")
+    @Email(message = "E-mail inválido")
     @Column(nullable = false, unique = true)
     private String email;
 
