@@ -2,16 +2,19 @@ package com.projeto.emprestimo.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.LocalDate;
-
 import com.projeto.emprestimo.exception.ConflitoException;
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 class EmprestimoTest {
 
+    private Emprestimo criarEmprestimo(LocalDate hoje) {
+        return new Emprestimo(new Equipamento(), new Colaborador(), hoje);
+    }
+
     @Test
     void criarEmprestimoDefineAsDatasDaR5() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 11, 14));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 11, 14));
 
         assertEquals(LocalDate.of(2026, 11, 14), emprestimo.getDataEmprestimo());
         assertEquals(LocalDate.of(2026, 11, 28), emprestimo.getDataPrevistaDevolucao());
@@ -19,7 +22,7 @@ class EmprestimoTest {
 
     @Test
     void devolverEmprestimoAbertoGuardaADataDeDevolucao() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 11, 14));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 11, 14));
 
         emprestimo.devolver(LocalDate.of(2026, 11, 20));
 
@@ -28,7 +31,7 @@ class EmprestimoTest {
 
     @Test
     void naoDevolveEmprestimoJaDevolvido() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 11, 14));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 11, 14));
         emprestimo.devolver(LocalDate.of(2026, 11, 20));
 
         assertThrows(ConflitoException.class,
@@ -37,21 +40,21 @@ class EmprestimoTest {
 
     @Test
     void emprestimoNaoDevolvidoComPrazoVencidoEstaAtrasado() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 10, 27));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 10, 27));
 
         assertTrue(emprestimo.estaAtrasadoEm(LocalDate.of(2026, 11, 14)));
     }
 
     @Test
     void emprestimoComPrazoNoFuturoNaoEstaAtrasado() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 11, 6));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 11, 6));
 
         assertFalse(emprestimo.estaAtrasadoEm(LocalDate.of(2026, 11, 14)));
     }
 
     @Test
     void emprestimoDevolvidoNaoEstaAtrasadoMesmoComPrazoVencido() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 10, 27));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 10, 27));
         emprestimo.devolver(LocalDate.of(2026, 11, 12));
 
         assertFalse(emprestimo.estaAtrasadoEm(LocalDate.of(2026, 11, 14)));
@@ -59,9 +62,8 @@ class EmprestimoTest {
 
     @Test
     void noDiaDoPrazoAindaNaoEstaAtrasado() {
-        Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 10, 31));
+        Emprestimo emprestimo = criarEmprestimo(LocalDate.of(2026, 10, 31));
 
         assertFalse(emprestimo.estaAtrasadoEm(LocalDate.of(2026, 11, 14)));
     }
-
 }
