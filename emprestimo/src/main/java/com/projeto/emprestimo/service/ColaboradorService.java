@@ -1,5 +1,7 @@
 package com.projeto.emprestimo.service;
 
+import com.projeto.emprestimo.exception.ConflitoException;
+import com.projeto.emprestimo.exception.NaoEncontradoException;
 import com.projeto.emprestimo.model.Colaborador;
 import com.projeto.emprestimo.repository.ColaboradorRepository;
 import org.springframework.stereotype.Service;
@@ -21,12 +23,12 @@ public class ColaboradorService {
 
     public Colaborador buscar(Long id) {
         return colaboradorRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Colaborador não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Colaborador não encontrado"));
     }
 
     public Colaborador cadastrar(Colaborador colaborador) {
         if (colaboradorRepository.existsByEmail(colaborador.getEmail())) {
-            throw new IllegalStateException("E-mail já cadastrado");
+            throw new ConflitoException("E-mail já cadastrado");
         }
         return colaboradorRepository.save(colaborador);
     }

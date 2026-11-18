@@ -12,4 +12,10 @@ public class TratadorDeErros {
     public ErroResposta naoEncontrado(NaoEncontradoException e) {
         return new ErroResposta(e.getMessage());
     }
+
+    @ExceptionHandler(ConflitoException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErroResposta conflito(ConflitoException e) {
+        return new ErroResposta(e.getMessage());
+    }
 }

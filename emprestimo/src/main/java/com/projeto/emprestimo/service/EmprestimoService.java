@@ -1,5 +1,7 @@
 package com.projeto.emprestimo.service;
 
+import com.projeto.emprestimo.exception.ConflitoException;
+import com.projeto.emprestimo.exception.NaoEncontradoException;
 import com.projeto.emprestimo.model.Emprestimo;
 import com.projeto.emprestimo.model.Equipamento;
 import com.projeto.emprestimo.repository.ColaboradorRepository;
@@ -36,41 +38,29 @@ public class EmprestimoService {
         return emprestimoRepository.findAll();
     }
 
-    public Emprestimo buscar(Long id) {
-        return emprestimoRepository.findById(id).orElseThrow(() ->
-                new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Empréstimo não encontrado"));
-    }
-
     public List<Emprestimo> listarDoColaborador(Long colaboradorId) {
         return emprestimoRepository.findByColaboradorId(colaboradorId);
     }
 
-    /*
-    listar: o filtro ?atrasados=true é opcional, então chega como true, false ou null.
-    Por isso o Boolean.TRUE.equals(atrasados): só entra no if se veio exatamente true,
-    e o null não dá erro. É a R8.
-    buscar: igual ao do equipamento, com 404 se o id não existir.
-    listarDoColaborador: devolve o histórico da pessoa.
-     */
+    public Emprestimo buscar(Long id) {
+        return emprestimoRepository.findById(id)
+                .orElseThrow(() -> new NaoEncontradoException("Empréstimo não encontrado"));
+    }
 
     @Transactional
     public Emprestimo emprestar(Long equipamentoId, Long colaboradorId) {
-        Equipamento equipamento = equipamentoRepository.findById(equipamentoId).orElseThrow(() ->
-                new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Equipamento não encontrado"));
+        Equipamento equipamento = equipamentoRepository.findById(equipamentoId)
+                .orElseThrow(() -> new NaoEncontradoException("Equipamento não encontrado"));
 
         if (!colaboradorRepository.existsById(colaboradorId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND, "Colaborador não encontrado");
+            throw new NaoEncontradoException("Colaborador não encontrado");
         }
 
         LocalDate hoje = LocalDate.now();
 
         if (emprestimoRepository
                 .existsByColaboradorIdAndDataDevolucaoIsNullAndDataPrevistaDevolucaoBefore(colaboradorId, hoje)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT, "Colaborador está com um empréstimo atrasado");
+            throw new ConflitoException("Colaborador está com um empréstimo atrasado");
         }
 
         equipamento.emprestar();
@@ -86,8 +76,7 @@ public class EmprestimoService {
         emprestimo.devolver(LocalDate.now());
 
         Equipamento equipamento = equipamentoRepository.findById(emprestimo.getEquipamentoId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Equipamento não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Equipamento não encontrado"));
         equipamento.devolver();
         equipamentoRepository.save(equipamento);
 

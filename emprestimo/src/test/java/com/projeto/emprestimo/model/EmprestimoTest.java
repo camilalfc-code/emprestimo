@@ -3,6 +3,8 @@ package com.projeto.emprestimo.model;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
+
+import com.projeto.emprestimo.exception.ConflitoException;
 import org.junit.jupiter.api.Test;
 
 class EmprestimoTest {
@@ -29,7 +31,7 @@ class EmprestimoTest {
         Emprestimo emprestimo = new Emprestimo(1L, 1L, LocalDate.of(2026, 11, 14));
         emprestimo.devolver(LocalDate.of(2026, 11, 20));
 
-        assertThrows(IllegalStateException.class,
+        assertThrows(ConflitoException.class,
                 () -> emprestimo.devolver(LocalDate.of(2026, 11, 21)));
     }
 
