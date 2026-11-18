@@ -51,4 +51,4 @@ Testes unitários com JUnit 5 em `EquipamentoTest` e `EmprestimoTest`.
 
 ## Bônus feitos
 
-Nenhum até agora.
+- **Swagger:** documentação das rotas em `/swagger-ui.html` (local: http://localhost:8080/swagger-ui.html, Render: https://emprestimo-rhxj.onrender.com/swagger-ui.html)
