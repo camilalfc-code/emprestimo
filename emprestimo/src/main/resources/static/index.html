@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Controle de equipamentos</title>
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#14202b;--mute:#5b6b7a;--line:#d5dce3;--accent:#0f5c75;--ok:#1f7a4d;--warn:#9a5b00;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{background:var(--ink);color:#fff;padding:22px 24px 0}
+header h1{margin:0 0 4px;font-size:1.6rem;letter-spacing:-.01em}
+header p{margin:0 0 18px;color:#b9c6d2;max-width:60ch}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:#b9c6d2;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+nav button[aria-selected=true]{color:#fff;border-color:#6fd0e8}
+nav button:focus-visible{outline:3px solid #6fd0e8;outline-offset:-3px}
+main{max-width:1040px;margin:0 auto;padding:24px}
+h2{font-size:1.15rem;margin:28px 0 10px}
+h2:first-of-type{margin-top:0}
+#msg{padding:10px 14px;border-radius:6px;margin-bottom:18px;font-weight:600}
+#msg.ok{background:#e3f3ea;color:#145a37;border:1px solid #9fd2b5}
+#msg.err{background:#fbe9e7;color:#8c1d16;border:1px solid #e3a8a3}
+.form,.filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;align-items:end;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+.filtros{grid-template-columns:repeat(auto-fit,minmax(190px,260px));margin-bottom:12px}
+label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.95rem}
+label.linha{flex-direction:row;align-items:center;gap:8px}
+input,select{font:inherit;padding:8px 10px;border:1px solid #9aa8b5;border-radius:4px;background:#fff;color:var(--ink)}
+input:focus-visible,select:focus-visible,.btn:focus-visible,.link:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:600;background:var(--accent);color:#fff;border:0;border-radius:4px;padding:9px 14px;cursor:pointer}
+.btn:hover{background:#0b4a5f}
+.tabela{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:6px}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font-size:.9rem;color:var(--mute);font-weight:600}
+tr:last-child td{border-bottom:0}
+.acoes{white-space:nowrap}
+.link{font:inherit;background:none;border:0;color:var(--accent);text-decoration:underline;cursor:pointer;padding:2px 6px}
+.vazio{color:var(--mute);text-align:center;padding:22px}
+.chip{display:inline-block;padding:1px 10px;border:1px solid currentColor;border-radius:99px;font-size:.85rem;font-weight:600}
+.chip.ok{color:var(--ok)}.chip.warn{color:var(--warn)}.chip.bad{color:var(--bad)}.chip.neutro{color:var(--mute)}
+@media(max-width:560px){main{padding:16px}header{padding:18px 16px 0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Controle de equipamentos</h1>
+  <p>Veja o que está com quem, registre empréstimos e devoluções e encontre o que está atrasado.</p>
+  <nav role="tablist" aria-label="Seções">
+    <button role="tab" data-aba="equipamentos" aria-selected="true">Equipamentos</button>
+    <button role="tab" data-aba="colaboradores" aria-selected="false">Colaboradores</button>
+    <button role="tab" data-aba="emprestimos" aria-selected="false">Empréstimos</button>
+  </nav>
+</header>
+<main>
+  <div id="msg" role="status" aria-live="polite" hidden></div>
+
+  <section id="equipamentos" class="aba">
+    <h2>Cadastrar equipamento</h2>
+    <form id="form-eq" class="form">
+      <label>Patrimônio<input name="patrimonio" placeholder="NB-001"></label>
+      <label>Nome<input name="nome" placeholder="Notebook Dell"></label>
+      <label>Tipo<select name="tipo"></select></label>
+      <button class="btn">Cadastrar equipamento</button>
+    </form>
+    <h2>Equipamentos cadastrados</h2>
+    <div class="filtros">
+      <label>Tipo<select id="f-tipo"></select></label>
+      <label>Situação<select id="f-disp"><option value="">Todas</option><option value="true">Disponíveis</option><option value="false">Emprestados</option></select></label>
+    </div>
+    <div class="tabela"><table>
+      <thead><tr><th>Patrimônio</th><th>Nome</th><th>Tipo</th><th>Situação</th><th>Ações</th></tr></thead>
+      <tbody id="eq-corpo"></tbody>
+    </table></div>
+  </section>
+
+  <section id="colaboradores" class="aba" hidden>
+    <h2>Cadastrar colaborador</h2>
+    <form id="form-co" class="form">
+      <label>Nome<input name="nome" placeholder="Ana Souza"></label>
+      <label>E-mail<input name="email" inputmode="email" placeholder="ana@empresa.com"></label>
+      <label>Cargo<input name="cargo" placeholder="Analista"></label>
+      <button class="btn">Cadastrar colaborador</button>
+    </form>
+    <h2>Colaboradores cadastrados</h2>
+    <div class="tabela"><table>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Cargo</th><th>Ações</th></tr></thead>
+      <tbody id="co-corpo"></tbody>
+    </table></div>
+    <div id="hist" hidden>
+      <h2 id="hist-titulo"></h2>
+      <div class="tabela"><table>
+        <thead><tr><th>Equipamento</th><th>Emprestado em</th><th>Devolução prevista</th><th>Situação</th></tr></thead>
+        <tbody id="hist-corpo"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="emprestimos" class="aba" hidden>
+    <h2>Registrar empréstimo</h2>
+    <form id="form-em" class="form">
+      <label>Equipamento disponível<select id="em-eq"></select></label>
+      <label>Colaborador<select id="em-co"></select></label>
+      <button class="btn">Registrar empréstimo</button>
+    </form>
+    <h2>Empréstimos</h2>
+    <div class="filtros">
+      <label class="linha"><input type="checkbox" id="so-atrasados"> Mostrar só os atrasados</label>
+    </div>
+    <div class="tabela"><table>
+      <thead><tr><th>Equipamento</th><th>Colaborador</th><th>Emprestado em</th><th>Devolução prevista</th><th>Devolvido em</th><th>Situação</th><th>Ações</th></tr></thead>
+      <tbody id="em-corpo"></tbody>
+    </table></div>
+  </section>
+</main>
+
+<script>
+const TIPOS = ['NOTEBOOK','MONITOR','HEADSET','TECLADO','MOUSE','OUTRO'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dia = d => d ? d.split('-').reverse().join('/') : '—';
+const nomeTipo = t => t ? t[0] + t.slice(1).toLowerCase() : '';
+const chip = (cor, txt) => `<span class="chip ${cor}">${txt}</span>`;
+const situacao = e => e.dataDevolucao ? chip('neutro','Devolvido') : e.atrasado ? chip('bad','Atrasado') : chip('warn','Em andamento');
+
+function aviso(texto, erro) {
+  const m = $('#msg');
+  m.textContent = texto;
+  m.className = erro ? 'err' : 'ok';
+  m.hidden = false;
+}
+
+async function api(caminho, opcoes = {}) {
+  const r = await fetch(caminho, { headers: { 'Content-Type': 'application/json' }, ...opcoes });
+  if (r.status === 204) return null;
+  let corpo = null;
+  try { corpo = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(corpo && corpo.message ? corpo.message : 'Algo deu errado (código ' + r.status + ').');
+  return corpo;
+}
+
+async function rodar(fn, sucesso) {
+  try {
+    const r = await fn();
+    if (sucesso) aviso(sucesso);
+    return r === null ? true : r;
+  } catch (e) {
+    aviso(e.message === 'Failed to fetch' ? 'Não foi possível falar com a API. Se ela estava parada, aguarde cerca de 1 minuto e tente de novo.' : e.message, true);
+  }
+}
+
+/* ---------- Equipamentos ---------- */
+const opcoesTipo = TIPOS.map(t => `<option value="${t}">${nomeTipo(t)}</option>`).join('');
+$('#form-eq select[name=tipo]').innerHTML = opcoesTipo;
+$('#f-tipo').innerHTML = '<option value="">Todos</option>' + opcoesTipo;
+
+async function carregarEquipamentos() {
+  const q = new URLSearchParams();
+  if ($('#f-tipo').value) q.set('tipo', $('#f-tipo').value);
+  if ($('#f-disp').value) q.set('disponivel', $('#f-disp').value);
+  const lista = await rodar(() => api('/equipamentos' + (q.toString() ? '?' + q : '')));
+  if (!Array.isArray(lista)) return;
+  $('#eq-corpo').innerHTML = lista.length ? lista.map(e => `<tr>
+    <td>${esc(e.patrimonio)}</td><td>${esc(e.nome)}</td><td>${nomeTipo(e.tipo)}</td>
+    <td>${e.disponivel ? chip('ok','Disponível') : chip('warn','Emprestado')}</td>
+    <td class="acoes">
+      <button class="link" data-editar="${e.id}" data-nome="${esc(e.nome)}" data-pat="${esc(e.patrimonio)}" data-tipo="${e.tipo}">Editar nome</button>
+      <button class="link" data-remover="${e.id}">Remover</button>
+    </td></tr>`).join('')
+    : '<tr><td colspan="5" class="vazio">Nenhum equipamento por aqui. Cadastre o primeiro no formulário acima.</td></tr>';
+}
+
+$('#form-eq').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const r = await rodar(() => api('/equipamentos', { method: 'POST', body: JSON.stringify({ patrimonio: f.patrimonio.value, nome: f.nome.value, tipo: f.tipo.value }) }), 'Equipamento cadastrado.');
+  if (r) { f.reset(); carregarEquipamentos(); }
+};
+$('#f-tipo').onchange = $('#f-disp').onchange = carregarEquipamentos;
+
+$('#eq-corpo').onclick = async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.remover) {
+    if (!confirm('Remover este equipamento?')) return;
+    await rodar(() => api('/equipamentos/' + b.dataset.remover, { method: 'DELETE' }), 'Equipamento removido.');
+    carregarEquipamentos();
+  } else if (b.dataset.editar) {
+    const nome = prompt('Novo nome do equipamento:', b.dataset.nome);
+    if (!nome) return;
+    await rodar(() => api('/equipamentos/' + b.dataset.editar, { method: 'PUT', body: JSON.stringify({ patrimonio: b.dataset.pat, nome, tipo: b.dataset.tipo }) }), 'Equipamento atualizado.');
+    carregarEquipamentos();
+  }
+};
+
+/* ---------- Colaboradores ---------- */
+async function carregarColaboradores() {
+  const lista = await rodar(() => api('/colaboradores'));
+  if (!Array.isArray(lista)) return;
+  $('#co-corpo').innerHTML = lista.length ? lista.map(c => `<tr>
+    <td>${esc(c.nome)}</td><td>${esc(c.email)}</td><td>${esc(c.cargo) || '—'}</td>
+    <td class="acoes"><button class="link" data-hist="${c.id}" data-nome="${esc(c.nome)}">Ver empréstimos</button></td></tr>`).join('')
+    : '<tr><td colspan="4" class="vazio">Nenhum colaborador por aqui. Cadastre a primeira pessoa no formulário acima.</td></tr>';
+}
+
+$('#form-co').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const r = await rodar(() => api('/colaboradores', { method: 'POST', body: JSON.stringify({ nome: f.nome.value, email: f.email.value, cargo: f.cargo.value }) }), 'Colaborador cadastrado.');
+  if (r) { f.reset(); carregarColaboradores(); }
+};
+
+const linhaHist = e => `<tr><td>${esc(e.equipamento.nome)}</td><td>${dia(e.dataEmprestimo)}</td><td>${dia(e.dataPrevistaDevolucao)}</td><td>${situacao(e)}</td></tr>`;
+
+$('#co-corpo').onclick = async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const lista = await rodar(() => api('/colaboradores/' + b.dataset.hist + '/emprestimos'));
+  if (!Array.isArray(lista)) return;
+  $('#hist-titulo').textContent = 'Empréstimos de ' + b.dataset.nome;
+  $('#hist-corpo').innerHTML = lista.length ? lista.map(linhaHist).join('')
+    : '<tr><td colspan="4" class="vazio">Essa pessoa ainda não pegou nenhum equipamento.</td></tr>';
+  $('#hist').hidden = false;
+};
+
+/* ---------- Empréstimos ---------- */
+async function carregarEmprestimos() {
+  const [eqs, cols, lista] = await Promise.all([
+    rodar(() => api('/equipamentos?disponivel=true')),
+    rodar(() => api('/colaboradores')),
+    rodar(() => api('/emprestimos' + ($('#so-atrasados').checked ? '?atrasados=true' : '')))
+  ]);
+  if (Array.isArray(eqs)) {
+    $('#em-eq').innerHTML = eqs.length ? eqs.map(e => `<option value="${e.id}">${esc(e.nome)} (${esc(e.patrimonio)})</option>`).join('')
+      : '<option value="">Nenhum equipamento disponível</option>';
+  }
+  if (Array.isArray(cols)) {
+    $('#em-co').innerHTML = cols.length ? cols.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('')
+      : '<option value="">Cadastre um colaborador primeiro</option>';
+  }
+  if (!Array.isArray(lista)) return;
+  $('#em-corpo').innerHTML = lista.length ? lista.map(e => `<tr>
+    <td>${esc(e.equipamento.nome)}</td><td>${esc(e.colaborador.nome)}</td>
+    <td>${dia(e.dataEmprestimo)}</td><td>${dia(e.dataPrevistaDevolucao)}</td><td>${dia(e.dataDevolucao)}</td>
+    <td>${situacao(e)}</td>
+    <td class="acoes">${e.dataDevolucao ? '' : `<button class="link" data-dev="${e.id}">Registrar devolução</button>`}</td></tr>`).join('')
+    : '<tr><td colspan="7" class="vazio">Nenhum empréstimo por aqui.</td></tr>';
+}
+
+$('#form-em').onsubmit = async e => {
+  e.preventDefault();
+  const eq = $('#em-eq').value, co = $('#em-co').value;
+  if (!eq || !co) { aviso('Escolha um equipamento disponível e um colaborador.', true); return; }
+  await rodar(() => api('/emprestimos?equipamentoId=' + eq + '&colaboradorId=' + co, { method: 'POST' }), 'Empréstimo registrado.');
+  carregarEmprestimos();
+};
+$('#so-atrasados').onchange = carregarEmprestimos;
+
+$('#em-corpo').onclick = async e => {
+  const b = e.target.closest('button');
+  if (!b || !b.dataset.dev) return;
+  await rodar(() => api('/emprestimos/' + b.dataset.dev + '/devolucao', { method: 'PUT' }), 'Devolução registrada.');
+  carregarEmprestimos();
+};
+
+/* ---------- Abas ---------- */
+const carregadores = { equipamentos: carregarEquipamentos, colaboradores: carregarColaboradores, emprestimos: carregarEmprestimos };
+function abrir(aba) {
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', b.dataset.aba === aba));
+  document.querySelectorAll('.aba').forEach(s => s.hidden = s.id !== aba);
+  return carregadores[aba]();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => abrir(b.dataset.aba));
+
+aviso('Conectando à API… se ela estava parada, a primeira resposta pode levar cerca de 1 minuto.');
+abrir('equipamentos').then(() => {
+  if ($('#msg').textContent.startsWith('Conectando')) $('#msg').hidden = true;
+});
+</script>
+</body>
+</html>

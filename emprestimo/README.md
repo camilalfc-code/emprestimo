@@ -49,6 +49,10 @@ API em Java com Spring Boot para controlar o empréstimo de equipamentos (notebo
 
 Testes unitários com JUnit 5 em `EquipamentoTest` e `EmprestimoTest`.
 
+## Front-end
+
+Página simples em HTML, CSS e JavaScript, que consome a própria API: `src/main/resources/static/index.html`. Abre na raiz do projeto (http://localhost:8080/ e https://emprestimo-rhxj.onrender.com/). Dá pra cadastrar equipamentos e colaboradores, filtrar a lista, registrar empréstimos e devoluções e ver os atrasados.
+
 ## Bônus feitos
 
 - **Swagger:** documentação das rotas em `/swagger-ui.html` (local: http://localhost:8080/swagger-ui.html, Render: https://emprestimo-rhxj.onrender.com/swagger-ui.html)
